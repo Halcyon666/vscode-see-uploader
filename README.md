@@ -73,3 +73,10 @@ English:
 - Clipboard upload is available on Windows
 - On macOS/Linux, use `Ctrl+Alt+P` to upload a local image
 - Configure your token with `seeUploader.token` in VS Code Settings
+
+## Typora
+
+- Windows 下推荐直接用仓库里的 `typora-see-upload.cmd` 作为 Typora Custom Command uploader
+- 也可以直接使用 `typora-see-upload.js`
+- 脚本会优先读取环境变量 `SEE_UPLOADER_TOKEN`，否则回退读取 VS Code Settings 里的 `seeUploader.token`
+- Typora 自定义命令示例：`"E:\all-project\vscode-see-uploader\typora-see-upload.cmd"`
