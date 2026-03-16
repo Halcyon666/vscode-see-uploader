@@ -2,7 +2,7 @@
   "name": "see-image-uploader",
   "displayName": "SEE Image Uploader",
   "description": "Upload clipboard and local images to S.EE from VS Code.",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "publisher": "CandyJack",
   "license": "MIT",
   "icon": "media/icon.png",
