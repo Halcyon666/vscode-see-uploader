@@ -1,0 +1,190 @@
+const vscode = require('vscode');
+const fs = require('fs');
+const path = require('path');
+const https = require('https');
+const os = require('os');
+const cp = require('child_process');
+
+const UPLOAD_URL = 'https://s.ee/api/v1/file/upload';
+
+function getToken() {
+  const config = vscode.workspace.getConfiguration('seeUploader');
+  const token = config.get('token', '').trim();
+  if (!token) {
+    throw new Error('S.EE token not configured. Go to VS Code Settings > seeUploader.token');
+  }
+  return token;
+}
+
+function uploadToSEE(imagePath) {
+  return new Promise((resolve, reject) => {
+    const token = getToken();
+    const fileName = path.basename(imagePath);
+    const fileContent = fs.readFileSync(imagePath);
+
+    const boundary = '----FormBoundary' + Date.now().toString(16);
+    const header = Buffer.from(
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="smfile"; filename="${fileName}"\r\n` +
+      `Content-Type: application/octet-stream\r\n\r\n`
+    );
+    const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
+    const body = Buffer.concat([header, fileContent, footer]);
+
+    const url = new URL(UPLOAD_URL);
+    const options = {
+      hostname: url.hostname,
+      port: url.port || (url.protocol === 'https:' ? 443 : 80),
+      path: url.pathname,
+      method: 'POST',
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': body.length,
+        'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+        'User-Agent': 'SEE-Image-Uploader/1.0'
+      }
+    };
+
+    const protocol = url.protocol === 'https:' ? https : https;  // Always use https for s.ee
+    const req = protocol.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(data);
+          if (result.success && result.data && result.data.url) {
+            resolve(result.data.url.trim());
+          } else {
+            reject(new Error(result.message || result.error || 'Upload failed'));
+          }
+        } catch (e) {
+          reject(new Error(`Failed to parse response: ${data}`));
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+async function readClipboardImage() {
+  const isWindows = os.platform() === 'win32';
+
+  if (!isWindows) {
+    vscode.window.showInformationMessage(
+      'Clipboard upload is only available on Windows. On macOS/Linux, use Ctrl+Alt+P to upload a local image.'
+    );
+    return;
+  }
+
+  // Windows: try to read clipboard via PowerShell
+  const tempDir = os.tmpdir();
+  const tempPath = path.join(tempDir, `see-clipboard-${Date.now()}.png`);
+
+  const psScript = `
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName System.Drawing
+    if ([System.Windows.Forms.Clipboard]::ContainsImage()) {
+      $img = [System.Windows.Forms.Clipboard]::GetImage()
+      $img.Save('${tempPath.replace(/\\/g, '\\\\')}', [System.Drawing.Imaging.ImageFormat]::Png)
+      Write-Output 'OK'
+    } else {
+      Write-Error 'No image in clipboard'
+    }
+  `;
+
+  return new Promise((resolve, reject) => {
+    cp.execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', psScript], { windowsHide: true }, async (error, stdout, stderr) => {
+      if (error || !stdout.includes('OK')) {
+        vscode.window.showInformationMessage(
+          'No image found in the clipboard. Use Ctrl+Alt+P to choose and upload a local image.'
+        );
+        return;
+      }
+
+      try {
+        vscode.window.showInformationMessage('Uploading from clipboard...');
+        const url = await uploadToSEE(tempPath);
+        const markdown = `![](${url})`;
+        await insertMarkdown(markdown);
+        vscode.window.showInformationMessage('Image uploaded successfully.');
+      } catch (err) {
+        vscode.window.showErrorMessage(`Upload failed: ${err.message}`);
+      } finally {
+        try { fs.unlinkSync(tempPath); } catch (e) { /* ignore */ }
+      }
+    });
+  });
+}
+
+async function insertMarkdown(markdown) {
+  const editor = vscode.window.activeTextEditor;
+
+  if (!editor) {
+    await vscode.env.clipboard.writeText(markdown);
+    vscode.window.showInformationMessage('Image uploaded. Markdown copied to clipboard.');
+    return;
+  }
+
+  await editor.edit(editBuilder => {
+    editBuilder.replace(editor.selection, markdown);
+  });
+}
+
+async function uploadSelectedImage() {
+  const selection = await vscode.window.showOpenDialog({
+    canSelectMany: false,
+    canSelectFiles: true,
+    canSelectFolders: false,
+    filters: {
+      Images: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp']
+    },
+    openLabel: 'Upload Image'
+  });
+
+  if (!selection || selection.length === 0) {
+    return;
+  }
+
+  const imagePath = selection[0].fsPath;
+  if (!fs.existsSync(imagePath)) {
+    throw new Error('Selected file does not exist');
+  }
+
+  vscode.window.showInformationMessage('Uploading image...');
+  const url = await uploadToSEE(imagePath);
+  const markdown = `![](${url})`;
+  await insertMarkdown(markdown);
+  vscode.window.showInformationMessage('Image uploaded successfully.');
+}
+
+function activate(context) {
+  context.subscriptions.push(
+    vscode.commands.registerCommand('seeUploader.uploadSelectedImage', async () => {
+      try {
+        await uploadSelectedImage();
+      } catch (error) {
+        vscode.window.showErrorMessage(`SEE upload failed: ${error.message}`);
+      }
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('seeUploader.uploadClipboardImage', async () => {
+      try {
+        await readClipboardImage();
+      } catch (error) {
+        vscode.window.showErrorMessage(`SEE upload failed: ${error.message}`);
+      }
+    })
+  );
+}
+
+function deactivate() {}
+
+module.exports = {
+  activate,
+  deactivate
+};

@@ -1,0 +1,75 @@
+{
+  "name": "see-image-uploader",
+  "displayName": "SEE Image Uploader",
+  "description": "Upload clipboard and local images to S.EE from VS Code.",
+  "version": "0.0.5",
+  "publisher": "CandyJack",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CandyJack/vscode-see-uploader.git"
+  },
+  "homepage": "https://github.com/CandyJack/vscode-see-uploader",
+  "bugs": {
+    "url": "https://github.com/CandyJack/vscode-see-uploader/issues"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "galleryBanner": {
+    "color": "#1f2937",
+    "theme": "dark"
+  },
+  "activationEvents": [
+    "onCommand:seeUploader.uploadClipboardImage",
+    "onCommand:seeUploader.uploadSelectedImage"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "seeUploader.uploadClipboardImage",
+        "title": "SEE Image Uploader: Upload Clipboard Image"
+      },
+      {
+        "command": "seeUploader.uploadSelectedImage",
+        "title": "SEE Image Uploader: Upload Image File"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "seeUploader.uploadClipboardImage",
+        "key": "ctrl+alt+u",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "seeUploader.uploadSelectedImage",
+        "key": "ctrl+alt+p",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "SEE Image Uploader",
+      "properties": {
+        "seeUploader.token": {
+          "type": "string",
+          "default": "",
+          "description": "S.EE API token. Get it from https://s.ee/"
+        }
+      }
+    }
+  },
+  "keywords": [
+    "image",
+    "upload",
+    "markdown",
+    "see",
+    "clipboard",
+    "s.ee",
+    "vscode"
+  ]
+}
