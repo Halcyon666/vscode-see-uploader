@@ -15,8 +15,8 @@
 
 脚本会按下面顺序读取 token：
 
-1. 环境变量 `SEE_UPLOADER_TOKEN`
-2. 环境变量 `SEE_TOKEN`
+1. 系统或用户环境变量 `SEE_UPLOADER_TOKEN`
+2. 系统或用户环境变量 `SEE_TOKEN`
 3. VS Code 用户设置里的 `seeUploader.token`
 
 如果你已经在 VS Code 里配置过：
@@ -25,7 +25,7 @@
 "seeUploader.token": "your-token-here"
 ```
 
-通常就不需要再额外配置环境变量。
+通常就不需要再额外配置这些系统/用户环境变量。
 
 ## Typora 配置
 
