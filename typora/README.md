@@ -5,6 +5,7 @@
 ## 文件说明
 
 - `typora-see-upload.cmd`：Windows 包装脚本，Typora 中优先推荐用这个
+- `typora-see-upload-user.cmd`：固定路径版 Windows 启动脚本模板，建议复制到 `%USERPROFILE%\typora-see-upload.cmd`
 - `typora-see-upload.sh`：macOS/Linux 包装脚本
 - `typora-see-upload.js`：实际执行上传的 Node.js 脚本
 
@@ -32,7 +33,13 @@ Typora -> Preferences -> Image -> When Insert Local Images -> Upload Service -> 
 
 ### Windows
 
-更稳定的做法：先在用户目录放一个固定脚本，再让 Typora 永远指向这个固定路径。
+更稳定的做法：先把仓库里的 `typora-see-upload-user.cmd` 复制到用户目录，再让 Typora 永远指向这个固定路径。
+
+建议执行一次：
+
+```bat
+copy /Y "%USERPROFILE%\.vscode\extensions\candyjack.see-image-uploader-<version>\typora\typora-see-upload-user.cmd" "%USERPROFILE%\typora-see-upload.cmd"
+```
 
 建议固定脚本路径：
 
@@ -44,12 +51,6 @@ Typora 推荐填写：
 
 ```text
 "%USERPROFILE%\typora-see-upload.cmd"
-```
-
-如果你想使用环境变量写法，可以改成：
-
-```text
-cmd /c "\"%USERPROFILE%\\typora-see-upload.cmd\""
 ```
 
 如果你仍然想直接指向仓库里的脚本，也建议写成变量路径：
@@ -100,7 +101,7 @@ cmd /c "\"%USERPROFILE%\\typora-see-upload.cmd\""
 Windows：
 
 ```bat
-cmd /c "\"%USERPROFILE%\\typora-see-upload.cmd\" \"C:\path\to\test.png\""
+"%USERPROFILE%\typora-see-upload.cmd" "C:\path\to\test.png"
 ```
 
 macOS：
