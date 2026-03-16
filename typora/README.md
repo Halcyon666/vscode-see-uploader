@@ -32,13 +32,33 @@ Typora -> Preferences -> Image -> When Insert Local Images -> Upload Service -> 
 
 ### Windows
 
-推荐直接填写：
+更稳定的做法：先在用户目录放一个固定脚本，再让 Typora 永远指向这个固定路径。
+
+建议固定脚本路径：
 
 ```text
-"E:\all-project\vscode-see-uploader\typora\typora-see-upload.cmd"
+%USERPROFILE%\typora-see-upload.cmd
 ```
 
-如果你的仓库不在这个位置，请改成你自己的实际路径。
+Typora 推荐填写：
+
+```text
+"%USERPROFILE%\typora-see-upload.cmd"
+```
+
+如果你想使用环境变量写法，可以改成：
+
+```text
+cmd /c "\"%USERPROFILE%\\typora-see-upload.cmd\""
+```
+
+如果你仍然想直接指向仓库里的脚本，也建议写成变量路径：
+
+```text
+"%USERPROFILE%\.vscode\extensions\candyjack.see-image-uploader-<version>\typora\typora-see-upload.cmd"
+```
+
+固定路径方案的好处是：扩展版本更新后，不需要重新修改 Typora 配置。
 
 ### macOS
 
@@ -80,7 +100,7 @@ Typora -> Preferences -> Image -> When Insert Local Images -> Upload Service -> 
 Windows：
 
 ```bat
-"E:\all-project\vscode-see-uploader\typora\typora-see-upload.cmd" "C:\path\to\test.png"
+cmd /c "\"%USERPROFILE%\\typora-see-upload.cmd\" \"C:\path\to\test.png\""
 ```
 
 macOS：
