@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { getTokenFromEnvOrVSCode, uploadFileToSEE } = require('./lib/see-upload');
+const { getTokenFromEnvOrVSCode, uploadFileToSEE } = require('../lib/see-upload');
 
 async function main() {
   const imagePaths = process.argv.slice(2);
