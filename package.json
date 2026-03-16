@@ -8,11 +8,11 @@
   "icon": "media/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CandyJack/vscode-see-uploader.git"
+    "url": "https://github.com/Halcyon666/vscode-see-uploader.git"
   },
-  "homepage": "https://github.com/CandyJack/vscode-see-uploader",
+  "homepage": "https://github.com/Halcyon666/vscode-see-uploader",
   "bugs": {
-    "url": "https://github.com/CandyJack/vscode-see-uploader/issues"
+    "url": "https://github.com/Halcyon666/vscode-see-uploader/issues"
   },
   "engines": {
     "vscode": "^1.80.0"
