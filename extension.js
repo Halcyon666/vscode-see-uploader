@@ -1,11 +1,9 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
 const os = require('os');
 const cp = require('child_process');
-
-const UPLOAD_URL = 'https://s.ee/api/v1/file/upload';
+const { uploadFileToSEE } = require('./lib/see-upload');
 
 function getToken() {
   const config = vscode.workspace.getConfiguration('seeUploader');
@@ -17,56 +15,7 @@ function getToken() {
 }
 
 function uploadToSEE(imagePath) {
-  return new Promise((resolve, reject) => {
-    const token = getToken();
-    const fileName = path.basename(imagePath);
-    const fileContent = fs.readFileSync(imagePath);
-
-    const boundary = '----FormBoundary' + Date.now().toString(16);
-    const header = Buffer.from(
-      `--${boundary}\r\n` +
-      `Content-Disposition: form-data; name="smfile"; filename="${fileName}"\r\n` +
-      `Content-Type: application/octet-stream\r\n\r\n`
-    );
-    const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
-    const body = Buffer.concat([header, fileContent, footer]);
-
-    const url = new URL(UPLOAD_URL);
-    const options = {
-      hostname: url.hostname,
-      port: url.port || (url.protocol === 'https:' ? 443 : 80),
-      path: url.pathname,
-      method: 'POST',
-      headers: {
-        'Content-Type': `multipart/form-data; boundary=${boundary}`,
-        'Content-Length': body.length,
-        'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
-        'User-Agent': 'SEE-Image-Uploader/1.0'
-      }
-    };
-
-    const protocol = url.protocol === 'https:' ? https : https;  // Always use https for s.ee
-    const req = protocol.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const result = JSON.parse(data);
-          if (result.success && result.data && result.data.url) {
-            resolve(result.data.url.trim());
-          } else {
-            reject(new Error(result.message || result.error || 'Upload failed'));
-          }
-        } catch (e) {
-          reject(new Error(`Failed to parse response: ${data}`));
-        }
-      });
-    });
-
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
+  return uploadFileToSEE(imagePath, getToken());
 }
 
 async function readClipboardImage() {
