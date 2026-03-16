@@ -76,7 +76,10 @@ English:
 
 ## Typora
 
-- Windows 下推荐直接用仓库里的 `typora-see-upload.cmd` 作为 Typora Custom Command uploader
-- 也可以直接使用 `typora-see-upload.js`
-- 脚本会优先读取环境变量 `SEE_UPLOADER_TOKEN`，否则回退读取 VS Code Settings 里的 `seeUploader.token`
-- Typora 自定义命令示例：`"E:\all-project\vscode-see-uploader\typora-see-upload.cmd"`
+- Typora can use the uploader through its `Custom Command` image upload option
+- Windows 推荐使用 `typora/typora-see-upload.cmd`
+- macOS 推荐使用 `typora/typora-see-upload.sh`
+- 脚本会优先读取 `SEE_UPLOADER_TOKEN` / `SEE_TOKEN`，否则回退读取 VS Code Settings 里的 `seeUploader.token`
+- Windows 示例：`"E:\all-project\vscode-see-uploader\typora\typora-see-upload.cmd"`
+- macOS 示例：`/bin/sh "/path/to/vscode-see-uploader/typora/typora-see-upload.sh"`
+- 更多 Typora 配置和排错说明见 `typora/README.md`
